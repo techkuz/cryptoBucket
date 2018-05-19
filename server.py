@@ -1,7 +1,12 @@
+import json
+import datetime as date
 from flask import Flask
 from flask import request
+from cryptobucket import Block, NodeState, proof_of_work
 
 
+miner_address = "q3nf394hjg-random-miner-address-34nf3i4nflkn3oi"
+blockchain = NodeState(miner_address)
 node = Flask(__name__)
 this_nodes_transactions = []
 
@@ -25,18 +30,20 @@ def transaction():
 
 @node.route('/blocks', methods=['GET'])
 def get_blocks():
-    chain_to_send = blockchain
+    chain_to_send = blockchain.chains[0]
     # Convert our blocks into dictionaries
     # so we can send them as json objects later
     for i in range(len(chain_to_send)):
         block = chain_to_send[i]
         block_index = str(block.index)
         block_timestamp = str(block.timestamp)
+        block_bucketdepth = str(block.bucket_depth)
         block_data = str(block.data)
         block_hash = block.hash
         chain_to_send[i] = {
             "index": block_index,
             "timestamp": block_timestamp,
+            "bucketdepth": block_bucketdepth,
             "data": block_data,
             "hash": block_hash
         }
@@ -47,7 +54,7 @@ def get_blocks():
 @node.route('/mine', methods=['GET'])
 def mine():
     # Get the last proof of work
-    last_block = blockchain[len(blockchain) - 1]
+    last_block = blockchain.chains[0][len(blockchain.chains[0]) - 1]
     last_proof = last_block.data['proof-of-work']
     # Find the proof of work for
     # the current block being mined
@@ -58,7 +65,7 @@ def mine():
     # we know we can mine a block so
     # we reward the miner by adding a transaction
     this_nodes_transactions.append(
-        {"from": "network", "to": miner_address, "amount": 1}
+        {"from": "network", "to": blockchain.miner_address, "amount": 1}
     )
     # Now we can gather the data needed
     # to create the new block
@@ -76,14 +83,16 @@ def mine():
     mined_block = Block(
         new_block_index,
         new_block_timestamp,
+        0,
         new_block_data,
         last_block_hash
     )
-    blockchain.append(mined_block)
+    blockchain.chains[0].append(mined_block)
     # Let the client know we mined a block
     return json.dumps({
         "index": new_block_index,
         "timestamp": str(new_block_timestamp),
+        "bucketdepth": str(0),
         "data": new_block_data,
         "hash": last_block_hash
     }) + "\n"
