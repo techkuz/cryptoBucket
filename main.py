@@ -10,7 +10,7 @@ if __name__ == '__main__':
     blockchain.append(create_genesis_block())
     # Store the transactions that
     # this node has in a list
-    this_nodes_transactions = []
+    # this_nodes_transactions = []
     # Store the url data of every
     # other node in the network
     # so that we can communicate

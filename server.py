@@ -1,7 +1,9 @@
 from flask import Flask
 from flask import request
 
+
 node = Flask(__name__)
+this_nodes_transactions = []
 
 
 @node.route('/txion', methods=['POST'])
