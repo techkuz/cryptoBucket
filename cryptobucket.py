@@ -3,6 +3,9 @@ import requests
 import hashlib as hasher
 import datetime as date
 
+bucket_size = 10
+minimum_tail = 10
+
 
 # Define what a block is
 class Block:
@@ -55,6 +58,32 @@ class NodeState:
         # then we stop mining and set
         # our chain to the longest one
         self.chains = longest_chain
+
+    def pack_blocks_into_bucket(self, bucket_depth):
+        last_bucket = self.chains[bucket_depth][len(self.chains[bucket_depth]) - 1]
+        lborder = 1
+
+        if last_bucket.index != 0:
+            lborder = last_bucket.data['from_block'] + 1
+
+        rborder = lborder + bucket_size
+        last_hash_before_bucket = self.chains[bucket_depth - 1][lborder - 1].hash
+        last_hash_in_bucket = self.chains[bucket_depth - 1][rborder].hash
+        new_bucket = Block(last_bucket.index + 1, date.datetime.now(), bucket_depth,
+                           {"from_block" : lborder, "to_block": rborder,
+                            "last_hash_before_bucket": last_hash_before_bucket,
+                            "last_hash_in_bucket": last_hash_in_bucket}, last_bucket.hash)
+        self.chains[bucket_depth].append(new_bucket)
+
+    def is_bucket_possible(self, bucket_depth):
+        last_bucket = self.chains[bucket_depth][len(self.chains[bucket_depth]) - 1]
+        lborder = 1
+        if last_bucket.index != 0:
+            lborder = last_bucket.data['from_block'] + 1
+
+        newest_block = self.chains[bucket_depth - 1][len(self.chains[bucket_depth - 1]) - 1].index
+        return (newest_block - lborder > bucket_size + minimum_tail)
+
 
 # Generate genesis block
 def create_genesis_block(bucket_depth=0):

@@ -92,11 +92,16 @@ def mine():
         last_block_hash
     )
     blockchain.chains[0].append(mined_block)
+
+    for i in range(1, len(blockchain.chains)):
+        if blockchain.is_bucket_possible(i):
+            blockchain.pack_blocks_into_bucket(i)
+
     # Let the client know we mined a block
     return json.dumps({
         "index": new_block_index,
         "timestamp": str(new_block_timestamp),
-        "bucketdepth": str(0),
+        "bucket_depth": str(0),
         "data": new_block_data,
         "hash": last_block_hash
     }) + "\n"
