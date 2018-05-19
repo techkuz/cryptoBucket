@@ -6,7 +6,7 @@ from cryptobucket import Block, NodeState, proof_of_work
 
 
 miner_address = "q3nf394hjg-random-miner-address-34nf3i4nflkn3oi"
-blockchain = NodeState(miner_address)
+blockchain = NodeState(miner_address, 2)
 node = Flask(__name__)
 this_nodes_transactions = []
 
@@ -30,24 +30,28 @@ def transaction():
 
 @node.route('/blocks', methods=['GET'])
 def get_blocks():
-    chain_to_send = blockchain.chains[0]
+    chains_to_send = []
     # Convert our blocks into dictionaries
     # so we can send them as json objects later
-    for i in range(len(chain_to_send)):
-        block = chain_to_send[i]
-        block_index = str(block.index)
-        block_timestamp = str(block.timestamp)
-        block_bucketdepth = str(block.bucket_depth)
-        block_data = str(block.data)
-        block_hash = block.hash
-        chain_to_send[i] = {
-            "index": block_index,
-            "timestamp": block_timestamp,
-            "bucketdepth": block_bucketdepth,
-            "data": block_data,
-            "hash": block_hash
-        }
-    chain_to_send = json.dumps(chain_to_send)
+    for i in range(len(blockchain.chains)):
+        chain = blockchain.chains[i]
+        chain_to_send = []
+        for j in range(len(chain)):
+            block = chain[j]
+            block_index = str(block.index)
+            block_timestamp = str(block.timestamp)
+            block_bucket_depth = str(block.bucket_depth)
+            block_data = str(block.data)
+            block_hash = block.hash
+            chain_to_send.append({
+                "index": block_index,
+                "timestamp": block_timestamp,
+                "bucket_depth": block_bucket_depth,
+                "data": block_data,
+                "hash": block_hash
+            })
+        chains_to_send.append(chain_to_send)
+    chain_to_send = json.dumps(chains_to_send)
     return chain_to_send
 
 
