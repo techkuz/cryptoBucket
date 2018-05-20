@@ -38,13 +38,14 @@ class NodeState:
 
     def find_new_chains(self):
         other_chains = []
-        for node_url in self.peer_nodes:
-            # Get their chains
-            block = requests.get(node_url + "/blocks").content
-            # json to dict
-            block = json.loads(block.decode('utf-8'))
-            # Add it to our list
-            other_chains.append(block)
+        if self.peer_nodes:
+            for node_url in self.peer_nodes:
+                # Get their chains
+                block = requests.get(node_url + "/blocks").content
+                # json to dict
+                block = json.loads(block.decode('utf-8'))
+                # Add it to our list
+                other_chains.append(block)
         return other_chains
 
     def consensus(self):
