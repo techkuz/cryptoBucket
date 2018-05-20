@@ -2,9 +2,10 @@ import json
 import requests
 import hashlib as hasher
 import datetime as date
+from enum import Enum
 
-bucket_size = 10
-minimum_tail = 10
+bucket_size = 5
+minimum_tail = 5
 
 
 # Define what a block is
@@ -27,10 +28,15 @@ class Block:
 
 
 class NodeState:
-    def __init__(self, miner_address, max_bucket_depth=1, peer_nodes=[]):
+    class NodeMode(Enum):
+        SERVICE_NODE = 1
+        USER_NODE = 2
+
+    def __init__(self, miner_address, max_bucket_depth=1, peer_nodes=[], mode=NodeMode.SERVICE_NODE):
         self.chains = []
         self.miner_address = miner_address
         self.peer_nodes = peer_nodes
+        self.mode = mode
         for bucket_depth in range(max_bucket_depth):
             self.chains.append([create_genesis_block(bucket_depth)])
 
@@ -59,31 +65,36 @@ class NodeState:
         # our chain to the longest one
         self.chains = longest_chain
 
-    def pack_blocks_into_bucket(self, bucket_depth):
+    def pack_blocks_into_bucket(self, bucket_depth, proof):
         last_bucket = self.chains[bucket_depth][len(self.chains[bucket_depth]) - 1]
         lborder = 1
+        offset = self.chains[bucket_depth - 1][0].index
 
         if last_bucket.index != 0:
-            lborder = last_bucket.data['from_block'] + 1
+            lborder = last_bucket.data['to_block'] + 1
+            lborder = lborder - offset
 
         rborder = lborder + bucket_size
         last_hash_before_bucket = self.chains[bucket_depth - 1][lborder - 1].hash
         last_hash_in_bucket = self.chains[bucket_depth - 1][rborder].hash
         new_bucket = Block(last_bucket.index + 1, date.datetime.now(), bucket_depth,
-                           {"from_block" : lborder, "to_block": rborder,
+                           {"proof-of-work": proof, "from_block" : lborder + offset, "to_block": rborder + offset,
                             "last_hash_before_bucket": last_hash_before_bucket,
                             "last_hash_in_bucket": last_hash_in_bucket}, last_bucket.hash)
         self.chains[bucket_depth].append(new_bucket)
 
+        if self.mode == NodeState.NodeMode.USER_NODE:
+            self.chains[bucket_depth - 1] = self.chains[bucket_depth - 1][rborder:]
+
     def is_bucket_possible(self, bucket_depth):
         last_bucket = self.chains[bucket_depth][len(self.chains[bucket_depth]) - 1]
         lborder = 1
+
         if last_bucket.index != 0:
-            lborder = last_bucket.data['from_block'] + 1
+            lborder = last_bucket.data['to_block'] + 1
 
         newest_block = self.chains[bucket_depth - 1][len(self.chains[bucket_depth - 1]) - 1].index
-        return (newest_block - lborder > bucket_size + minimum_tail)
-
+        return newest_block - lborder > bucket_size + minimum_tail
 
 # Generate genesis block
 def create_genesis_block(bucket_depth=0):
@@ -96,13 +107,13 @@ def create_genesis_block(bucket_depth=0):
 def proof_of_work(last_proof):
     # Create a variable that we will use to find
     # our next proof of work
-    incrementor = last_proof + 1
+    incrementor = last_proof + last_proof
     # Keep incrementing the incrementor until
     # it's equal to a number divisible by 9
     # and the proof of work of the previous
     # block in the chain
     while not (incrementor % 9 == 0 and incrementor % last_proof == 0):
-        incrementor += 1
+        incrementor += last_proof
     # Once that number is found,
     # we can return it as a proof
     # of our work

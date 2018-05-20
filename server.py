@@ -6,7 +6,7 @@ from cryptobucket import Block, NodeState, proof_of_work
 
 
 miner_address = "q3nf394hjg-random-miner-address-34nf3i4nflkn3oi"
-blockchain = NodeState(miner_address, 2)
+blockchain = NodeState(miner_address, 2, [], NodeState.NodeMode.USER_NODE)
 node = Flask(__name__)
 this_nodes_transactions = []
 
@@ -95,7 +95,7 @@ def mine():
 
     for i in range(1, len(blockchain.chains)):
         if blockchain.is_bucket_possible(i):
-            blockchain.pack_blocks_into_bucket(i)
+            blockchain.pack_blocks_into_bucket(i, proof)
 
     # Let the client know we mined a block
     return json.dumps({
