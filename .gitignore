@@ -3,6 +3,8 @@
 # Idea
 .idea*
 
+config.local.yml
+
 # COPIED PACKAGES
 
 # Byte-compiled / optimized / DLL files
