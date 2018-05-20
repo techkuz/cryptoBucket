@@ -2,7 +2,7 @@ import json
 import requests
 import hashlib as hasher
 import datetime as date
-from enum import Enum
+from collections import namedtuple
 from config import config
 
 bucket_size = config['bucket']['size']
@@ -54,14 +54,20 @@ class NodeState:
         other_chains = self.find_new_chains()
         # If our chain isn't longest,
         # then we store the longest chain
-        longest_chain = self.chains
+        longest_chains = self.chains
         for chain in other_chains:
-            if longest_chain[0][-1].index < chain[0][-1].index:
-                longest_chain = chain
+            if longest_chains[0][-1].__dict__['index'] < int(chain[0][-1]['index']):
+                longest_chains = chain
         # If the longest chain isn't ours,
         # then we stop mining and set
         # our chain to the longest one
-        self.chains = longest_chain
+        if longest_chains != self.chains:
+            for chain in longest_chains:
+                for i in range(len(chain)):
+                    print(chain[i]['data'])
+                    chain[i] = Block(int(chain[i]['index']), chain[i]['timestamp'],
+                                     int(chain[i]['bucket_depth']), json.loads(chain[i]['data']), chain[i]['previous_hash'])
+            self.chains = longest_chains
 
     def pack_blocks_into_bucket(self, bucket_depth, proof):
         last_bucket = self.chains[bucket_depth][len(self.chains[bucket_depth]) - 1]
