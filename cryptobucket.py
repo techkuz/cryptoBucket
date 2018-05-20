@@ -3,17 +3,18 @@ import requests
 import hashlib as hasher
 import datetime as date
 from enum import Enum
+from config import config
 
-bucket_size = 5
-minimum_tail = 5
+bucket_size = config['bucket']['size']
+minimum_tail = config['bucket']['minimum_tail']
 
 
 # Define what a block is
 class Block:
-    def __init__(self, index, timestamp, backet_depth, data, previous_hash):
+    def __init__(self, index, timestamp, bucket_depth, data, previous_hash):
         self.index = index
         self.timestamp = timestamp
-        self.bucket_depth = backet_depth
+        self.bucket_depth = bucket_depth
         self.data = data
         self.previous_hash = previous_hash
         self.hash = self.hash_block()
@@ -28,11 +29,8 @@ class Block:
 
 
 class NodeState:
-    class NodeMode(Enum):
-        SERVICE_NODE = 1
-        USER_NODE = 2
 
-    def __init__(self, miner_address, max_bucket_depth=1, peer_nodes=[], mode=NodeMode.SERVICE_NODE):
+    def __init__(self, miner_address, max_bucket_depth=1, peer_nodes=[], mode='full'):
         self.chains = []
         self.miner_address = miner_address
         self.peer_nodes = peer_nodes
@@ -58,7 +56,7 @@ class NodeState:
         # then we store the longest chain
         longest_chain = self.chains
         for chain in other_chains:
-            if len(longest_chain[0]) < len(chain[0]):
+            if longest_chain[0][-1].index < chain[0][-1].index:
                 longest_chain = chain
         # If the longest chain isn't ours,
         # then we stop mining and set
@@ -83,7 +81,7 @@ class NodeState:
                             "last_hash_in_bucket": last_hash_in_bucket}, last_bucket.hash)
         self.chains[bucket_depth].append(new_bucket)
 
-        if self.mode == NodeState.NodeMode.USER_NODE:
+        if self.mode == 'lite':
             self.chains[bucket_depth - 1] = self.chains[bucket_depth - 1][rborder:]
 
     def is_bucket_possible(self, bucket_depth):

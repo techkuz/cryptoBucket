@@ -3,10 +3,11 @@ import datetime as date
 from flask import Flask
 from flask import request
 from cryptobucket import Block, NodeState, proof_of_work
+from config import config
 
 
-miner_address = "q3nf394hjg-random-miner-address-34nf3i4nflkn3oi"
-blockchain = NodeState(miner_address, 2, [], NodeState.NodeMode.USER_NODE)
+blockchain = NodeState(config['miner_address'], config['bucket']['depth'], config['peer_nodes'],
+                       config['mode'])
 node = Flask(__name__)
 this_nodes_transactions = []
 
@@ -24,6 +25,7 @@ def transaction():
     print("FROM: {}".format(new_txion['from'].encode('ascii', 'replace')))
     print("TO: {}".format(new_txion['to'].encode('ascii', 'replace')))
     print("AMOUNT: {}\n".format(new_txion['amount']))
+    blockchain.consensus()
     # Then we let the client know it worked out
     return "Transaction submission successful\n"
 
@@ -57,6 +59,7 @@ def get_blocks():
 
 @node.route('/mine', methods=['GET'])
 def mine():
+    blockchain.consensus()
     # Get the last proof of work
     last_block = blockchain.chains[0][len(blockchain.chains[0]) - 1]
     last_proof = last_block.data['proof-of-work']

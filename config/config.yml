@@ -1,9 +1,14 @@
 bucket:
-    size: 2
-    minimum_tail: 2
+    size: 20
+    minimum_tail: 10
+    depth: 2
 
-mode: 'full'
+mode: 'lite'
+
+port: '5000'
 
 miner_address: 'address'
 
-peer_nodes: 'nodes'
+peer_nodes:
+    - 'localhost:5001'
+    - 'localhost:5002'
