@@ -97,11 +97,11 @@ class NodeState:
     def remove_head(self, bucket_depth):
         if self.mode == 'lite':
             from_block = self.chains[bucket_depth][-1].data['to_block']
-            i = 0
+            j = 0
             for i in range(len(self.chains[bucket_depth - 1])):
                 if self.chains[bucket_depth - 1][i].index == from_block:
-                    i = i
-            self.chains[bucket_depth - 1] = self.chains[bucket_depth - 1][i:]
+                    j = i
+            self.chains[bucket_depth - 1] = self.chains[bucket_depth - 1][j:]
 
     def is_bucket_possible(self, bucket_depth):
         last_bucket = self.chains[bucket_depth][len(self.chains[bucket_depth]) - 1]
