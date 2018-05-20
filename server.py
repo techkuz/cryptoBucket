@@ -64,6 +64,9 @@ def get_blocks():
 @node.route('/mine', methods=['GET'])
 def mine():
     blockchain.consensus()
+    if blockchain.mode == 'lite':
+        return "Get fresh blocks, but lite nodes doesn't support mining yet\n"
+
     # Get the last proof of work
     last_block = blockchain.chains[0][len(blockchain.chains[0]) - 1]
     last_proof = last_block.data['proof-of-work']
