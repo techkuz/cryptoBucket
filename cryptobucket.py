@@ -1,8 +1,8 @@
 import json
 import requests
-import hashlib as hasher
-import datetime as date
-from collections import namedtuple
+import hashlib
+import datetime
+
 from config import config
 
 bucket_size = config['bucket']['size']
@@ -20,7 +20,7 @@ class Block:
         self.hash = self.hash_block()
 
     def hash_block(self):
-        sha = hasher.sha256()
+        sha = hashlib.sha256()
         sha.update(
             str(self.index).encode('utf-8') + str(self.timestamp).encode('utf-8') +
             str(self.bucket_depth).encode('utf-8') + str(self.data).encode('utf-8') +
@@ -29,7 +29,6 @@ class Block:
 
 
 class NodeState:
-
     def __init__(self, miner_address, max_bucket_depth=1, peer_nodes=[], mode='full'):
         self.chains = []
         self.miner_address = miner_address
@@ -88,7 +87,7 @@ class NodeState:
         rborder = lborder + bucket_size
         last_hash_before_bucket = self.chains[bucket_depth - 1][lborder - 1].hash
         last_hash_in_bucket = self.chains[bucket_depth - 1][rborder].hash
-        new_bucket = Block(last_bucket.index + 1, date.datetime.now(), bucket_depth,
+        new_bucket = Block(last_bucket.index + 1, datetime.datetime.now(), bucket_depth,
                            {"proof-of-work": proof, "from_block" : lborder + offset, "to_block": rborder + offset,
                             "last_hash_before_bucket": last_hash_before_bucket,
                             "last_hash_in_bucket": last_hash_in_bucket}, last_bucket.hash)
@@ -118,7 +117,7 @@ class NodeState:
 def create_genesis_block(bucket_depth=0):
     # Manually construct a block with
     # index zero and arbitrary previous hash
-    return Block(0, date.datetime.now(), bucket_depth,
+    return Block(0, datetime.datetime.now(), bucket_depth,
                  {"proof-of-work": 9, "transactions": None}, "0")
 
 

@@ -1,7 +1,9 @@
 import json
 import datetime as date
+
 from flask import Flask
 from flask import request
+
 from cryptobucket import Block, NodeState, proof_of_work
 from config import config
 
@@ -12,19 +14,19 @@ node = Flask(__name__)
 this_nodes_transactions = []
 
 
-@node.route('/txion', methods=['POST'])
+@node.route('/transaction', methods=['POST'])
 def transaction():
     # On each new POST request,
     # we extract the transaction data
-    new_txion = request.get_json()
+    new_transaction = request.get_json()
     # Then we add the transaction to our list
-    this_nodes_transactions.append(new_txion)
+    this_nodes_transactions.append(new_transaction)
     # Because the transaction was successfully
     # submitted, we log it to our console
     print("New transaction")
-    print("FROM: {}".format(new_txion['from'].encode('ascii', 'replace')))
-    print("TO: {}".format(new_txion['to'].encode('ascii', 'replace')))
-    print("AMOUNT: {}\n".format(new_txion['amount']))
+    print("FROM: {}".format(new_transaction['from'].encode('ascii', 'replace')))
+    print("TO: {}".format(new_transaction['to'].encode('ascii', 'replace')))
+    print("AMOUNT: {}\n".format(new_transaction['amount']))
     blockchain.consensus()
     # Then we let the client know it worked out
     return "Transaction submission successful\n"
