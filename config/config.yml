@@ -1,0 +1,9 @@
+bucket:
+    size: 2
+    minimum_tail: 2
+
+mode: 'full'
+
+miner_address: 'address'
+
+peer_nodes: 'nodes'
