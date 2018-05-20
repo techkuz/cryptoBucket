@@ -3,7 +3,7 @@ bucket:
     minimum_tail: 10
     depth: 2
 
-mode: 'lite'
+mode: 'full'
 
 port: '5000'
 

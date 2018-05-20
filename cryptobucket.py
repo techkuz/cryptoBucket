@@ -95,7 +95,7 @@ class NodeState:
         self.remove_head(bucket_depth)
 
     def remove_head(self, bucket_depth):
-        if self.mode == 'lite':
+        if self.mode == 'lite' and len(self.chains[bucket_depth]) > 1:
             from_block = self.chains[bucket_depth][-1].data['to_block']
             j = 0
             for i in range(len(self.chains[bucket_depth - 1])):

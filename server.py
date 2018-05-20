@@ -22,9 +22,6 @@ def transaction():
     this_nodes_transactions.append(new_transaction)
     # Success -> log
     print("New transaction")
-    print("FROM: {}".format(new_transaction['from'].encode('ascii', 'replace')))
-    print("TO: {}".format(new_transaction['to'].encode('ascii', 'replace')))
-    print("AMOUNT: {}\n".format(new_transaction['amount']))
     blockchain.consensus()
     # Inform client about success
     return "Transaction submission successful\n"
