@@ -16,27 +16,24 @@ this_nodes_transactions = []
 
 @node.route('/transaction', methods=['POST'])
 def transaction():
-    # On each new POST request,
-    # we extract the transaction data
+    # Extract transaction data
     new_transaction = request.get_json()
-    # Then we add the transaction to our list
+
     this_nodes_transactions.append(new_transaction)
-    # Because the transaction was successfully
-    # submitted, we log it to our console
+    # Success -> log
     print("New transaction")
     print("FROM: {}".format(new_transaction['from'].encode('ascii', 'replace')))
     print("TO: {}".format(new_transaction['to'].encode('ascii', 'replace')))
     print("AMOUNT: {}\n".format(new_transaction['amount']))
     blockchain.consensus()
-    # Then we let the client know it worked out
+    # Inform client about success
     return "Transaction submission successful\n"
 
 
 @node.route('/blocks', methods=['GET'])
 def get_blocks():
     chains_to_send = []
-    # Convert our blocks into dictionaries
-    # so we can send them as json objects later
+    # Bocks to dicts, to send as json later
     for i in range(len(blockchain.chains)):
         chain = blockchain.chains[i]
         chain_to_send = []
@@ -104,7 +101,7 @@ def mine():
         if blockchain.is_bucket_possible(i):
             blockchain.pack_blocks_into_bucket(i, proof)
 
-    # Let the client know we mined a block
+    # Inform client that mined
     return json.dumps({
         "index": new_block_index,
         "timestamp": str(new_block_timestamp),

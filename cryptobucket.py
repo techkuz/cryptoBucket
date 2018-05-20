@@ -9,7 +9,6 @@ bucket_size = config['bucket']['size']
 minimum_tail = config['bucket']['minimum_tail']
 
 
-# Define what a block is
 class Block:
     def __init__(self, index, timestamp, bucket_depth, data, previous_hash):
         self.index = index
@@ -40,9 +39,9 @@ class NodeState:
     def find_new_chains(self):
         other_chains = []
         for node_url in self.peer_nodes:
-            # Get their chains using a GET request
+            # Get their chains
             block = requests.get(node_url + "/blocks").content
-            # Convert the JSON object to a Python dictionary
+            # json to dict
             block = json.loads(block)
             # Add it to our list
             other_chains.append(block)
