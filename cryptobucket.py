@@ -42,7 +42,7 @@ class NodeState:
             # Get their chains
             block = requests.get(node_url + "/blocks").content
             # json to dict
-            block = json.loads(block)
+            block = json.loads(block.decode('utf-8'))
             # Add it to our list
             other_chains.append(block)
         return other_chains
