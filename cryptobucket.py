@@ -55,19 +55,26 @@ class NodeState:
         # If our chain isn't longest,
         # then we store the longest chain
         longest_chains = self.chains
-        for chain in other_chains:
-            if longest_chains[0][-1].__dict__['index'] < int(chain[0][-1]['index']):
-                longest_chains = chain
+        for chains in other_chains:
+            if self.mode == 'lite' and longest_chains[0][-1].__dict__['index'] < int(chains[0][-1]['index']):
+                longest_chains = chains
+            elif len(longest_chains[0]) < len(chains[0]):
+                longest_chains = chains
+
         # If the longest chain isn't ours,
         # then we stop mining and set
         # our chain to the longest one
         if longest_chains != self.chains:
-            for chain in longest_chains:
-                for i in range(len(chain)):
-                    print(chain[i]['data'])
-                    chain[i] = Block(int(chain[i]['index']), chain[i]['timestamp'],
-                                     int(chain[i]['bucket_depth']), json.loads(chain[i]['data']), chain[i]['previous_hash'])
+            for chains in longest_chains:
+                for i in range(len(chains)):
+                    print(chains[i]['data'])
+                    chains[i] = Block(int(chains[i]['index']), chains[i]['timestamp'],
+                                     int(chains[i]['bucket_depth']), json.loads(chains[i]['data']), chains[i]['previous_hash'])
             self.chains = longest_chains
+            for i in range(1, len(self.chains)):
+                if self.is_bucket_possible(i):
+                    self.pack_blocks_into_bucket(i, self.chains[0][-1].data['proof-of-work'])
+                self.remove_head(i)
 
     def pack_blocks_into_bucket(self, bucket_depth, proof):
         last_bucket = self.chains[bucket_depth][len(self.chains[bucket_depth]) - 1]
@@ -86,9 +93,16 @@ class NodeState:
                             "last_hash_before_bucket": last_hash_before_bucket,
                             "last_hash_in_bucket": last_hash_in_bucket}, last_bucket.hash)
         self.chains[bucket_depth].append(new_bucket)
+        self.remove_head(bucket_depth)
 
+    def remove_head(self, bucket_depth):
         if self.mode == 'lite':
-            self.chains[bucket_depth - 1] = self.chains[bucket_depth - 1][rborder:]
+            from_block = self.chains[bucket_depth][-1].data['to_block']
+            i = 0
+            for i in range(len(self.chains[bucket_depth - 1])):
+                if self.chains[bucket_depth - 1][i].index == from_block:
+                    i = i
+            self.chains[bucket_depth - 1] = self.chains[bucket_depth - 1][i:]
 
     def is_bucket_possible(self, bucket_depth):
         last_bucket = self.chains[bucket_depth][len(self.chains[bucket_depth]) - 1]
