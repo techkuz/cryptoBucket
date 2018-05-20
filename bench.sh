@@ -10,6 +10,8 @@ do
 	curl $1/mine > /dev/null 2>&1
 done
 
+curl $2/mine > /dev/null 2>&1
+
 echo "Full history size (bytes):"
 curl -sI $1/blocks | grep Content-Length
 echo "Bucketed history size (bytes):"
